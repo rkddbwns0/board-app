@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 
 declare const module: any;
 
@@ -10,7 +11,10 @@ async function bootstrap() {
     origin: ['http://localhost:3000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
   });
+
+  app.use(cookieParser());
 
   const config = new DocumentBuilder()
     .setTitle('board-app')

@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import UsersService from './users.service';
 import { SignupDto } from 'src/dto/users.dto';
 
@@ -11,8 +11,8 @@ export default class UsersController {
     return await this.usersService.signUp(signupDto);
   }
 
-  @Post()
-  async dupEmail(@Body() email: string) {
+  @Get()
+  async dupEmail(@Query('email') email: string) {
     return await this.usersService.dupEmail(email);
   }
 }

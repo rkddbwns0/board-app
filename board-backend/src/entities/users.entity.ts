@@ -4,10 +4,12 @@ import {
   DeleteDateColumn,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import PostEntity from './post.entity';
+import TokenEntity from './token.entity';
 
 @Entity('users')
 export default class UsersEntity {
@@ -32,9 +34,12 @@ export default class UsersEntity {
   @DeleteDateColumn({ type: 'date' })
   deleted_at: Date;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'timestamp' })
   last_login: Date;
 
   @OneToMany(() => PostEntity, (post) => post.writer)
   posts: PostEntity[];
+
+  @OneToOne(() => TokenEntity, (token) => token.user_id)
+  token: TokenEntity;
 }

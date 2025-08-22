@@ -3,6 +3,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from './uesrs/users.module';
+import { AuthModule } from './auth/auth.module';
+import { AuthStrategy } from './auth/auth.strategy';
 
 @Module({
   imports: [
@@ -19,8 +22,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       password: process.env.DB_PASSWORD,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
     }),
+    UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AuthStrategy],
 })
 export class AppModule {}

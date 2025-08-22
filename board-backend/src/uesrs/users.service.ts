@@ -2,9 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import UsersEntity from 'src/entities/users.entity';
 import { Repository } from 'typeorm';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { SignupDto } from 'src/dto/users.dto';
-import { STATUS_CODES } from 'http';
 
 @Injectable()
 export default class UsersService {
@@ -35,7 +34,7 @@ export default class UsersService {
 
       await this.users.save(signup_user);
 
-      return { message: '회원가입이 완료되었습니다.', STATUS_CODES: 204 };
+      return { message: '회원가입이 완료되었습니다.' };
     } catch (e) {
       console.log(e);
       if (e instanceof HttpException) {
@@ -45,7 +44,8 @@ export default class UsersService {
   }
 
   private hashPassword(password: string) {
-    const hash = bcrypt.hashSync(password, 10);
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
     return hash;
   }
 
@@ -58,6 +58,8 @@ export default class UsersService {
       if (user) {
         throw new HttpException('가입된 이메일입니다.', HttpStatus.BAD_REQUEST);
       }
+
+      return { message: '가입 가능한 이메일입니다.' };
     } catch (e) {
       console.log(e);
       if (e instanceof HttpException) {
