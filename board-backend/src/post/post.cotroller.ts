@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from 'src/dto/post.dto';
 
@@ -12,7 +20,7 @@ export class PostController {
     return this.postService.getPost(id);
   }
 
-  @Post('')
+  @Post()
   async createPost(@Body() createPostDto: CreatePostDto) {
     return this.postService.createPost(createPostDto);
   }
@@ -21,5 +29,10 @@ export class PostController {
   async getPostDetail(@Param('post_id') post_id: number) {
     const id = Number(post_id);
     return this.postService.getPostDetail(id);
+  }
+
+  @Delete(':post_id')
+  async deletePost(@Param('post_id') post_id: number) {
+    return this.postService.deletePost(post_id);
   }
 }

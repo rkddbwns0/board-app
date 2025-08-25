@@ -34,7 +34,8 @@ const Main = () => {
                 <div className="board-header">
                     <h4>게시판</h4>
                     <div className="user-info">
-                        <h5>{user?.name}님</h5>
+                        {user ? <h5>{user?.name}님</h5> : <h5>Guest</h5>}
+
                         <button className="write-post-button" onClick={handlePost}>
                             글쓰기
                         </button>

@@ -139,4 +139,29 @@ export class PostService {
       }
     }
   }
+
+  async deletePost(post_id: number) {
+    try {
+      const post = await this.post.findOne({
+        where: {
+          post_id: post_id,
+        },
+      });
+
+      if (!post) {
+        throw new HttpException(
+          '존재하지 않는 게시글입니다.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      await this.post.delete({ post_id: post_id });
+      return { message: '게시글이 성공적으로 삭제되었습니다.' };
+    } catch (e) {
+      console.error(e);
+      if (e instanceof HttpException) {
+        throw e;
+      }
+    }
+  }
 }
