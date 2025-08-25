@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../css/signup.css';
 
 const Signup = () => {
     const navigate = useNavigate();
@@ -47,19 +48,29 @@ const Signup = () => {
     };
 
     return (
-        <div>
-            <div>
+        <div className="signup-container">
+            <div className="signup-form">
                 <h4>회원가입</h4>
-            </div>
-            <div>
-                <input placeholder="이메일" value={email} onChange={(e) => setEmail(e.target.value)} />
-                <button onClick={handleDupEmail}>이메일중복확인</button>
-                <input placeholder="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} />
-
-                <input placeholder="이름" value={name} onChange={(e) => setName(e.target.value)} />
-            </div>
-            <div>
-                <button onClick={handleSignup}>회원가입</button>
+                <div className="input-group">
+                    <input placeholder="이메일" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <button onClick={handleDupEmail} className="email-check-button">
+                        이메일중복확인
+                    </button>
+                </div>
+                <div className="input-group">
+                    <input
+                        placeholder="비밀번호"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                </div>
+                <div className="input-group">
+                    <input placeholder="이름" value={name} onChange={(e) => setName(e.target.value)} />
+                </div>
+                <button onClick={handleSignup} className="signup-button">
+                    회원가입
+                </button>
             </div>
         </div>
     );

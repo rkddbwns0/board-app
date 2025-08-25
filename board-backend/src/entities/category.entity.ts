@@ -7,7 +7,7 @@ export default class CategoryEntity {
   category_id: number;
 
   @Column({ type: 'varchar', length: 10, nullable: false })
-  cateory: string;
+  category: string;
 
   @OneToMany(() => PostEntity, (post) => post.category_id)
   posts: PostEntity[];

@@ -116,6 +116,8 @@ export class AuthService {
         expiresIn: '1h',
       });
 
+      console.log('재발급 완료');
+
       return { access_token: newAceessToken };
     } catch (e) {
       if (e instanceof HttpException) {
@@ -126,9 +128,9 @@ export class AuthService {
 
   async logout(user_id: number) {
     try {
-      const delete_token = await this.token.delete({ user_id: user_id });
-      console.log(delete_token);
-      return;
-    } catch (e) {}
+      return await this.token.delete({ user_id: user_id });
+    } catch (e) {
+      console.error(e);
+    }
   }
 }

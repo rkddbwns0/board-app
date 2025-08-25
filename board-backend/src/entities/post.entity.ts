@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -16,9 +17,11 @@ export default class PostEntity {
   post_id: number;
 
   @ManyToOne(() => CategoryEntity, (category) => category.category_id)
+  @JoinColumn({ name: 'category_id' })
   category_id: CategoryEntity;
 
   @ManyToOne(() => UsersEntity, (user) => user.user_id)
+  @JoinColumn({ name: 'writer' })
   writer: UsersEntity;
 
   @Column({ type: 'varchar', length: 30, nullable: false })

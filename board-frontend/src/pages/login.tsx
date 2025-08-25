@@ -1,11 +1,14 @@
 import axios from 'axios';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../css/login.css';
+import { useAuth } from '../api/authProvider.tsx';
 
 const Login = () => {
     const navigate = useNavigate();
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
+    const { auth } = useAuth();
 
     const handleLogin = async () => {
         try {
@@ -19,6 +22,7 @@ const Login = () => {
             );
             if (response.status === 201) {
                 localStorage.setItem('access_token', response.data);
+                await auth();
                 navigate('/main');
             }
         } catch (e) {
@@ -28,21 +32,27 @@ const Login = () => {
     };
 
     return (
-        <div>
-            <h4>로그인</h4>
-            <div>
-                <input type="email" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                <input
-                    type="password"
-                    placeholder="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
+        <div className="login-container">
+            <div className="login-form">
+                <h4>로그인</h4>
+                <div className="input-group">
+                    <input type="email" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                </div>
+                <div className="input-group">
+                    <input
+                        type="password"
+                        placeholder="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                </div>
+                <button onClick={handleLogin} className="login-button">
+                    로그인
+                </button>
+                <div className="signup-link">
+                    <a href="/signup">회원가입</a>
+                </div>
             </div>
-            <div>
-                <button onClick={handleLogin}>로그인</button>
-            </div>
-            <a href="/signup">회원가입</a>
         </div>
     );
 };

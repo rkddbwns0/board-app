@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './uesrs/users.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthStrategy } from './auth/auth.strategy';
+import { PostModule } from './post/post.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { AuthStrategy } from './auth/auth.strategy';
     }),
     UserModule,
     AuthModule,
+    PostModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthStrategy],

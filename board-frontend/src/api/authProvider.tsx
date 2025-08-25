@@ -7,6 +7,7 @@ interface AuthContextType {
     user: any;
     loading: boolean;
     newAceessToken: () => Promise<void>;
+    auth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,7 +22,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const refreshToken = Cookies.get('refresh_token');
             if (!refreshToken) {
                 setUser(null);
-                navigate('/login');
+
                 return;
             }
 
@@ -31,44 +32,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (e) {
             console.log(e);
             setUser(null);
-            navigate('/');
             console.error(e);
         }
     };
 
-    React.useEffect(() => {
-        const auth = async () => {
-            let token = localStorage.getItem('access_token');
-            if (!token) {
-                token = await newAceessToken();
-            } else {
-                setLoading(false);
-                return;
-            }
+    const auth = async () => {
+        let token = localStorage.getItem('access_token');
 
-            try {
-                const response = await axios.get(`http://localhost:3001/auth`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                setUser(response.data);
-            } catch (e) {
-                console.log(e);
-                await newAceessToken();
-            } finally {
-                setLoading(false);
-            }
-        };
+        if (!token) {
+            token = await newAceessToken();
+        }
+        try {
+            const response = await axios.get(`http://localhost:3001/auth`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log(response.data);
+            setUser(response.data);
+        } catch (e) {
+            console.log(e);
+            await newAceessToken();
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
         auth();
     }, []);
 
-    return <AuthContext.Provider value={{ user, loading, newAceessToken }}>{children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={{ user, loading, newAceessToken, auth }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
-    console.log(context);
     if (!context) {
         throw new Error('useAuth 에러');
     }
