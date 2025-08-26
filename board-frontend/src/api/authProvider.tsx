@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     Authorization: `Bearer ${token}`,
                 },
             });
+            localStorage.setItem('user', JSON.stringify(response.data));
             console.log(response.data);
             setUser(response.data);
         } catch (e) {
@@ -60,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     React.useEffect(() => {
         auth();
-    }, []);
+    }, [navigate]);
 
     return <AuthContext.Provider value={{ user, loading, newAceessToken, auth }}>{children}</AuthContext.Provider>;
 };

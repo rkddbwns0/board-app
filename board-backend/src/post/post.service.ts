@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreatePostDto } from 'src/dto/post.dto';
+import { CreatePostDto, UpdatePostDto } from 'src/dto/post.dto';
 import PostEntity from 'src/entities/post.entity';
 import UsersEntity from 'src/entities/users.entity';
 import { Repository } from 'typeorm';
@@ -66,8 +66,10 @@ export class PostService {
 
   async createPost(createPostDto: CreatePostDto) {
     try {
+      const { category_id, writer, title, content } = createPostDto;
+
       const user = await this.users.findOne({
-        where: { user_id: createPostDto.writer },
+        where: { user_id: writer },
       });
 
       if (!user) {
@@ -78,9 +80,9 @@ export class PostService {
       }
 
       const newPost = this.post.create({
-        title: createPostDto.title,
-        content: createPostDto.content,
-        category_id: { category_id: createPostDto.category_id },
+        title: title,
+        content: content,
+        category_id: { category_id: category_id },
         writer: { user_id: user.user_id },
       });
 
@@ -130,12 +132,70 @@ export class PostService {
           HttpStatus.BAD_REQUEST,
         );
       }
-
       return post;
     } catch (e) {
       console.error(e);
       if (e instanceof Error) {
         throw e;
+      }
+    }
+  }
+
+  async incrementView(post_id: number, user_id?: number | null) {
+    if (user_id) {
+      await this.post
+        .createQueryBuilder()
+        .update()
+        .set({ view: () => 'view + 1' })
+        .where('post_id = :post_id', { post_id })
+        .andWhere(user_id ? 'writer <> :writer' : '1=1', { writer: user_id })
+        .execute();
+    } else {
+      await this.post
+        .createQueryBuilder()
+        .update()
+        .set({ view: () => 'view + 1' })
+        .where('post_id = :post_id', { post_id })
+        .execute();
+    }
+    return;
+  }
+
+  async updatePost(post_id: number, updatePostDto: UpdatePostDto) {
+    try {
+      const { writer, title, content } = updatePostDto;
+
+      const post = await this.post.findOne({
+        where: {
+          post_id: post_id,
+          writer: { user_id: writer },
+        },
+      });
+
+      if (!post) {
+        throw new HttpException(
+          '존재하지 않는 게시글이거나 권한이 없습니다.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      await this.post
+        .createQueryBuilder()
+        .update()
+        .set({ title, content })
+        .where('post_id = :post_id', { post_id })
+        .andWhere('writer = :writer', { writer: writer })
+        .execute();
+
+      return { message: '게시글이 성공적으로 수정되었습니다.' };
+    } catch (e) {
+      console.error(e);
+      if (e instanceof HttpException) {
+        throw e;
+      } else {
+        throw new HttpException(
+          '게시글 수정에 실패했습니다.',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
       }
     }
   }

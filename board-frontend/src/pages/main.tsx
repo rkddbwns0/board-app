@@ -13,6 +13,7 @@ const Main = () => {
         try {
             await axios.post('http://localhost:3001/auth/logout');
             localStorage.removeItem('access_token');
+            localStorage.removeItem('user');
             navigate('/');
         } catch (e) {
             console.error(e);

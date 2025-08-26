@@ -7,6 +7,7 @@ import Post from './pages/post.tsx'; // Import Post component
 import PrivateRoute from './api/privateRoute.tsx';
 import { AuthProvider, useAuth } from './api/authProvider.tsx';
 import Board from './pages/board.tsx';
+import PostEdit from './pages/postEdit.tsx';
 
 function App() {
     return (
@@ -33,11 +34,12 @@ function App() {
                                 </PrivateRoute>
                             }
                         />
+                        <Route path="/board/:id" element={<Board />} />
                         <Route
-                            path="/board/:id"
+                            path="/postEdit/:id"
                             element={
                                 <PrivateRoute>
-                                    <Board />
+                                    <PostEdit />
                                 </PrivateRoute>
                             }
                         />

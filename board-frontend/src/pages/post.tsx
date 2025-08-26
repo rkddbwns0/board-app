@@ -17,12 +17,16 @@ const Post = () => {
             return;
         }
         try {
-            await axios.post('http://localhost:3001/post', {
-                title: title,
-                content: content,
-                category_id: category,
-                writer: user.user_id,
-            });
+            await axios.post(
+                'http://localhost:3001/post',
+                {
+                    title: title,
+                    content: content,
+                    category_id: category,
+                    writer: user.user_id,
+                },
+                { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } }
+            );
             navigate('/main');
         } catch (e) {
             console.error(e);
