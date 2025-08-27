@@ -51,6 +51,24 @@ const Board = () => {
         }
     }, [id, user, navigate]);
 
+    const handlePostLike = async () => {
+        if (!user) {
+            alert('로그인 후 이용해 주세요.');
+            navigate('/login');
+            return;
+        }
+        try {
+            const response = await axios.post('http://localhost:3001/post_like', {
+                post_id: Number(id),
+                user_id: JSON.parse(user!).user_id,
+            });
+            alert(response.data.message);
+            fetchPost();
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
     useEffect(() => {
         fetchPost();
     }, []);
@@ -77,7 +95,9 @@ const Board = () => {
                     <textarea readOnly value={post.내용} style={{ lineHeight: '2' }}>
                         {post.내용}
                     </textarea>
-                    <button className="like-button">좋아요👍🏻</button>
+                    <button className="like-button" onClick={handlePostLike}>
+                        좋아요👍🏻
+                    </button>
                 </div>
                 <div className="board-view-actions">
                     <button className="list-button" onClick={() => navigate('/main')}>

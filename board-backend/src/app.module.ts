@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { AuthStrategy } from './auth/auth.strategy';
 import { PostModule } from './post/post.module';
 import { CategoryModule } from './category/category.module';
+import { PostLikeModule } from './like/post_like.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { CategoryModule } from './category/category.module';
     AuthModule,
     PostModule,
     CategoryModule,
+    PostLikeModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthStrategy],

@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import PostEntity from './post.entity';
 import TokenEntity from './token.entity';
+import PostLikeEntity from './post_like.entity';
 
 @Entity('users')
 export default class UsersEntity {
@@ -42,4 +43,7 @@ export default class UsersEntity {
 
   @OneToOne(() => TokenEntity, (token) => token.user_id)
   token: TokenEntity;
+
+  @OneToMany(() => PostLikeEntity, (postLike) => postLike.user_id)
+  likes: PostLikeEntity[];
 }

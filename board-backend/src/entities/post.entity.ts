@@ -5,11 +5,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import CategoryEntity from './category.entity';
 import UsersEntity from './users.entity';
+import PostLikeEntity from './post_like.entity';
 
 @Entity('post')
 export default class PostEntity {
@@ -44,4 +46,7 @@ export default class PostEntity {
 
   @DeleteDateColumn({ type: 'date' })
   deleted_at: Date;
+
+  @OneToMany(() => PostLikeEntity, (postLike) => postLike.post_id)
+  postLikes: PostLikeEntity[];
 }
