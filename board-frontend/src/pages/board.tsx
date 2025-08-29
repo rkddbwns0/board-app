@@ -2,10 +2,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../css/board.css';
+import '../css/comment.css';
+import Comments from '../component/comment.tsx';
 
 const Board = () => {
     const user = localStorage.getItem('user');
-    const { id } = useParams();
+    const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [post, setPost] = useState<{
         카테고리: string;
@@ -117,6 +119,7 @@ const Board = () => {
                         </div>
                     ) : null}
                 </div>
+                {id && <Comments postId={id} />}
             </div>
         </div>
     );
