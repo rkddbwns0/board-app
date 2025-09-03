@@ -46,6 +46,7 @@ const Board = () => {
                 params,
             });
             setPost(response.data);
+            console.log(response.data);
         } catch (e) {
             console.error(e);
             alert(e.response?.data.message);
@@ -119,7 +120,7 @@ const Board = () => {
                         </div>
                     ) : null}
                 </div>
-                {id && <Comments postId={id} />}
+                {id && <Comments postId={id} writer_id={post.user_id} />}
             </div>
         </div>
     );

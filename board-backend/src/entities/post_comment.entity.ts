@@ -3,6 +3,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import PostEntity from './post.entity';
@@ -33,11 +34,14 @@ export class PostCommentEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
-  @ManyToOne(
-    () => PostCommentEntity,
-    (post_comment) => post_comment.comment_id,
-    { onDelete: 'CASCADE', onUpdate: 'CASCADE' },
-  )
+  @ManyToOne(() => PostCommentEntity, (post_comment) => post_comment.children, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    nullable: true,
+  })
   @JoinColumn({ name: 'parent_id' })
   parent_id: PostCommentEntity;
+
+  @OneToMany(() => PostCommentEntity, (post_comment) => post_comment.parent_id)
+  children: PostCommentEntity[];
 }

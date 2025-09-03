@@ -2,25 +2,29 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../css/comment.css';
+import { useAuth } from '../api/authProvider.tsx';
 
 interface Comment {
     comment_id: number;
     post_id: number;
+    witer_id: number;
     user_id: number;
     parent_comment: string;
     parent_created_at: string;
     작성자: string;
     parent_id: number | null;
     depth: number;
-    replies?: Comment[];
+    children?: Comment[];
 }
 
 interface CommentProps {
     postId: string;
+    writer_id: number;
 }
 
-const Comments: React.FC<CommentProps> = ({ postId }) => {
-    const user = localStorage.getItem('user');
+const Comments: React.FC<CommentProps> = ({ postId, writer_id }) => {
+    const users = localStorage.getItem('user');
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
@@ -30,24 +34,9 @@ const Comments: React.FC<CommentProps> = ({ postId }) => {
     const fetchComments = useCallback(async () => {
         try {
             const response = await axios.get(`http://localhost:3001/post_comment/${postId}`);
-            const flatComments = response.data;
+
+            setComments(response.data);
             console.log(response.data);
-            const commentMap: { [key: number]: Comment } = {};
-            const rootComments: Comment[] = [];
-
-            flatComments.forEach((comment: Comment) => {
-                comment.replies = [];
-                commentMap[comment.comment_id] = comment;
-                if (comment.parent_id) {
-                    if (commentMap[comment.parent_id]) {
-                        commentMap[comment.parent_id].replies?.push(comment);
-                    }
-                } else {
-                    rootComments.push(comment);
-                }
-            });
-
-            setComments(rootComments);
         } catch (e) {
             console.error(e);
         }
@@ -58,7 +47,7 @@ const Comments: React.FC<CommentProps> = ({ postId }) => {
     }, [fetchComments]);
 
     const handleCommentSubmit = async (parentId: number | null = null) => {
-        if (!user) {
+        if (!user || !users) {
             alert('로그인 후 이용해 주세요.');
             navigate('/login');
             return;
@@ -75,7 +64,7 @@ const Comments: React.FC<CommentProps> = ({ postId }) => {
                 'http://localhost:3001/post_comment',
                 {
                     post_id: Number(postId),
-                    user_id: JSON.parse(user!).user_id,
+                    user_id: JSON.parse(users!).user_id,
                     comment: content,
                     parent_id: parentId,
                 },
@@ -113,20 +102,22 @@ const Comments: React.FC<CommentProps> = ({ postId }) => {
         }
     };
 
-    const renderComment = (comment: Comment) => (
+    const renderComment = (comment: Comment, writer_id: number) => (
         <li key={comment.comment_id} className={comment.depth > 0 ? 'reply-item' : 'comment-item'}>
             <div className="comment-header">
-                <span className="comment-author">{comment.작성자}</span>
+                <span className="comment-author">
+                    {comment.작성자} {writer_id === comment.user_id ? '작성자' : ''}
+                </span>
                 <span className="comment-date">{comment.parent_created_at}</span>
             </div>
             <div className="comment-content">{comment.parent_comment}</div>
             <div className="comment-actions">
-                {comment.depth === 0 && (
+                {comment.parent_id === null && (
                     <button className="reply-button" onClick={() => setReplyingTo(comment.comment_id)}>
                         답글
                     </button>
                 )}
-                {user && JSON.parse(user).user_id === comment.user_id && (
+                {user && users && JSON.parse(users).user_id === comment.user_id && (
                     <button className="comment-delete-button" onClick={() => deleteAlert(comment.comment_id)}>
                         삭제
                     </button>
@@ -149,8 +140,8 @@ const Comments: React.FC<CommentProps> = ({ postId }) => {
                 </div>
             )}
 
-            {comment.replies && comment.replies.length > 0 && (
-                <ul className="comment-list">{comment.replies.map(renderComment)}</ul>
+            {comment.children && comment.children.length > 0 && (
+                <ul className="comment-list">{comment.children.map(renderComment)}</ul>
             )}
         </li>
     );
@@ -169,7 +160,9 @@ const Comments: React.FC<CommentProps> = ({ postId }) => {
                     등록
                 </button>
             </div>
-            <ul className="comment-list">{comments.map(renderComment)}</ul>
+            {comments.length > 0 && (
+                <ul className="comment-list">{comments.map((comment) => renderComment(comment, writer_id))}</ul>
+            )}
         </div>
     );
 };

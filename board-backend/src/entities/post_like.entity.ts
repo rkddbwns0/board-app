@@ -13,11 +13,17 @@ export default class PostLikeEntity {
   @PrimaryGeneratedColumn()
   like_id: number;
 
-  @ManyToOne(() => PostEntity, (post) => post.post_id)
+  @ManyToOne(() => PostEntity, (post) => post.post_id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'post_id' })
   post_id: PostEntity;
 
-  @ManyToOne(() => UsersEntity, (user) => user.user_id)
+  @ManyToOne(() => UsersEntity, (user) => user.user_id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_id' })
   user_id: UsersEntity;
 
