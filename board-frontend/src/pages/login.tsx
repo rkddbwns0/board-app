@@ -21,7 +21,7 @@ const Login = () => {
                 { withCredentials: true }
             );
             if (response.status === 201) {
-                localStorage.setItem('access_token', response.data);
+                sessionStorage.setItem('access_token', response.data);
                 await auth();
                 navigate('/main');
             }

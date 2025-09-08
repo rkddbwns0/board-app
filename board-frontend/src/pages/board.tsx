@@ -4,9 +4,11 @@ import axios from 'axios';
 import '../css/board.css';
 import '../css/comment.css';
 import Comments from '../component/comment.tsx';
+import { useAuth } from '../api/authProvider.tsx';
 
 const Board = () => {
-    const user = localStorage.getItem('user');
+    const users = sessionStorage.getItem('user');
+    const user = useAuth();
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [post, setPost] = useState<{
@@ -23,7 +25,7 @@ const Board = () => {
     const deletePost = async (post_id) => {
         try {
             const response = await axios.delete(`http://localhost:3001/post/${post_id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+                headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` },
             });
         } catch (e) {
             console.error(e);
@@ -41,12 +43,11 @@ const Board = () => {
 
     const fetchPost = useCallback(async () => {
         try {
-            const params = user ? { user_id: JSON.parse(user).user_id } : {};
+            const params = users ? { user_id: JSON.parse(users).user_id } : {};
             const response = await axios.get(`http://localhost:3001/post/detail/${id}`, {
                 params,
             });
             setPost(response.data);
-            console.log(response.data);
         } catch (e) {
             console.error(e);
             alert(e.response?.data.message);
@@ -55,16 +56,21 @@ const Board = () => {
     }, [id, user, navigate]);
 
     const handlePostLike = async () => {
-        if (!user) {
+        if (!user || !users) {
             alert('로그인 후 이용해 주세요.');
             navigate('/login');
             return;
         }
+
         try {
-            const response = await axios.post('http://localhost:3001/post_like', {
-                post_id: Number(id),
-                user_id: JSON.parse(user!).user_id,
-            });
+            const response = await axios.post(
+                'http://localhost:3001/post_like',
+                {
+                    post_id: Number(id),
+                    user_id: JSON.parse(users!).user_id,
+                },
+                { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } }
+            );
             alert(response.data.message);
             fetchPost();
         } catch (e) {
@@ -106,7 +112,7 @@ const Board = () => {
                     <button className="list-button" onClick={() => navigate('/main')}>
                         목록
                     </button>
-                    {user && JSON.parse(user).user_id === post.user_id ? (
+                    {user && users && JSON.parse(users).user_id === post.user_id ? (
                         <div>
                             <button
                                 className="edit-button"

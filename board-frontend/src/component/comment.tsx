@@ -4,39 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import '../css/comment.css';
 import { useAuth } from '../api/authProvider.tsx';
 
-interface Comment {
-    comment_id: number;
-    post_id: number;
-    witer_id: number;
-    user_id: number;
-    parent_comment: string;
-    parent_created_at: string;
-    작성자: string;
-    parent_id: number | null;
-    depth: number;
-    children?: Comment[];
-}
-
-interface CommentProps {
-    postId: string;
-    writer_id: number;
-}
-
-const Comments: React.FC<CommentProps> = ({ postId, writer_id }) => {
-    const users = localStorage.getItem('user');
+const Comments = ({ postId, writer_id }) => {
+    const users = sessionStorage.getItem('user');
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [comments, setComments] = useState<Comment[]>([]);
+    const [comments, setComments] = useState<any>({});
     const [newComment, setNewComment] = useState('');
-    const [replyingTo, setReplyingTo] = useState<number | null>(null);
+    const [parentId, setParentId] = useState<number | null>(null);
     const [replyContent, setReplyContent] = useState('');
 
     const fetchComments = useCallback(async () => {
         try {
             const response = await axios.get(`http://localhost:3001/post_comment/${postId}`);
 
-            setComments(response.data);
-            console.log(response.data);
+            setComments(response.data.comment);
         } catch (e) {
             console.error(e);
         }
@@ -68,12 +49,12 @@ const Comments: React.FC<CommentProps> = ({ postId, writer_id }) => {
                     comment: content,
                     parent_id: parentId,
                 },
-                { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } }
+                { headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` } }
             );
 
             if (parentId) {
                 setReplyContent('');
-                setReplyingTo(null);
+                setParentId(null);
             } else {
                 setNewComment('');
             }
@@ -87,7 +68,7 @@ const Comments: React.FC<CommentProps> = ({ postId, writer_id }) => {
     const deleteComment = async (comment_id: number) => {
         try {
             await axios.delete(`http://localhost:3001/comment/${comment_id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+                headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` },
             });
             fetchComments();
         } catch (e) {
@@ -102,67 +83,65 @@ const Comments: React.FC<CommentProps> = ({ postId, writer_id }) => {
         }
     };
 
-    const renderComment = (comment: Comment, writer_id: number) => (
-        <li key={comment.comment_id} className={comment.depth > 0 ? 'reply-item' : 'comment-item'}>
-            <div className="comment-header">
-                <span className="comment-author">
-                    {comment.작성자} {writer_id === comment.user_id ? '작성자' : ''}
-                </span>
-                <span className="comment-date">{comment.parent_created_at}</span>
+    const replyComment = (comment_id: number) => {
+        return (
+            <div>
+                <textarea
+                    value={replyContent}
+                    onChange={(e) => setReplyContent(e.target.value)}
+                    placeholder="답글을 입력해 주세요."
+                />
             </div>
-            <div className="comment-content">{comment.parent_comment}</div>
-            <div className="comment-actions">
-                {comment.parent_id === null && (
-                    <button className="reply-button" onClick={() => setReplyingTo(comment.comment_id)}>
-                        답글
-                    </button>
-                )}
-                {user && users && JSON.parse(users).user_id === comment.user_id && (
-                    <button className="comment-delete-button" onClick={() => deleteAlert(comment.comment_id)}>
-                        삭제
-                    </button>
-                )}
-            </div>
-
-            {replyingTo === comment.comment_id && (
-                <div className="reply-form-container">
-                    <div className="reply-form">
-                        <textarea
-                            className="reply-textarea"
-                            value={replyContent}
-                            onChange={(e) => setReplyContent(e.target.value)}
-                            placeholder="대댓글을 입력하세요..."
-                        />
-                        <button className="reply-submit-button" onClick={() => handleCommentSubmit(comment.comment_id)}>
-                            등록
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {comment.children && comment.children.length > 0 && (
-                <ul className="comment-list">{comment.children.map(renderComment)}</ul>
-            )}
-        </li>
-    );
+        );
+    };
 
     return (
-        <div className="comment-container">
-            <h3>댓글</h3>
-            <div className="comment-form">
+        <div>
+            <div>
                 <textarea
-                    className="comment-textarea"
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="댓글을 입력하세요..."
+                    placeholder="댓글을 입력해 주세요."
                 />
-                <button className="comment-submit-button" onClick={() => handleCommentSubmit()}>
-                    등록
-                </button>
+                <button onClick={() => handleCommentSubmit()}>답글</button>
             </div>
-            {comments.length > 0 && (
-                <ul className="comment-list">{comments.map((comment) => renderComment(comment, writer_id))}</ul>
-            )}
+            {comments.length > 0 ? (
+                <div>
+                    {comments.map((comment: any) => (
+                        <div key={comment.comment_id}>
+                            <ul>
+                                <span className="comment-writer">{comment.user_id.name}</span>
+                                <span className="comment-content">{comment.comment}</span>
+                                <span className="comment-date">{comment.date}</span>
+                                <button
+                                    onClick={() =>
+                                        setParentId(parentId === comment.comment_id ? null : comment.comment_id)
+                                    }
+                                >
+                                    답글
+                                </button>
+                                {comment.user_id.user_id === writer_id ? (
+                                    <>
+                                        <button onClick={() => deleteAlert(comment.comment_id)}>삭제</button>
+                                    </>
+                                ) : null}
+                                {comment.children.length > 0 ? (
+                                    <div>
+                                        {comment.children.map((child: any) => (
+                                            <ul key={child.comment_id}>
+                                                <span className="comment-writer">{child.user_id.name}</span>
+                                                <span className="comment-content">{child.comment}</span>
+                                                <span className="comment-date">{child.date}</span>
+                                            </ul>
+                                        ))}
+                                    </div>
+                                ) : null}
+                            </ul>
+                            {parentId === comment.comment_id ? replyComment(comment.comment_id) : null}
+                        </div>
+                    ))}
+                </div>
+            ) : null}
         </div>
     );
 };

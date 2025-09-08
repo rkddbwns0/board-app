@@ -27,17 +27,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
 
             const response = await axios.post(`http://localhost:3001/auth/refresh`, {}, { withCredentials: true });
-            localStorage.setItem('access_token', response.data.access_token);
+            sessionStorage.setItem('access_token', response.data.access_token);
             return response.data.access_token;
         } catch (e) {
             console.log(e);
             setUser(null);
+            sessionStorage.removeItem('access_token');
+            sessionStorage.removeItem('user');
             console.error(e);
         }
     };
 
     const auth = async () => {
-        let token = localStorage.getItem('access_token');
+        let token = sessionStorage.getItem('access_token');
 
         if (!token) {
             token = await newAceessToken();
@@ -48,7 +50,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            localStorage.setItem('user', JSON.stringify(response.data));
+            sessionStorage.setItem('user', JSON.stringify(response.data));
             console.log(response.data);
             setUser(response.data);
         } catch (e) {
