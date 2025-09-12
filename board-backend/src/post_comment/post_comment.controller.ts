@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import PostCommnetService from './post_comment.service';
 import { CreatePostCommentDto } from 'src/dto/post_comment.dto';
 import { JwtAuthGuard } from 'src/auth/auth.guard';
@@ -10,6 +19,7 @@ export default class PostCommentController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async createPostComment(@Body() createpostCommentDto: CreatePostCommentDto) {
+    console.log(createpostCommentDto);
     return await this.postCommentService.createPostComment(
       createpostCommentDto,
     );
@@ -18,5 +28,13 @@ export default class PostCommentController {
   @Get(':post_id')
   async getPostComment(@Param('post_id') post_id: number) {
     return await this.postCommentService.getPostComment(post_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':comment_id')
+  async DeleteCommentDto(@Param('comment_id') comment_id: number) {
+    return await this.postCommentService.DeleteCommentDto({
+      comment_id,
+    });
   }
 }

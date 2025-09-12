@@ -18,6 +18,7 @@ const Comments = ({ postId, writer_id }) => {
             const response = await axios.get(`http://localhost:3001/post_comment/${postId}`);
 
             setComments(response.data.comment);
+            console.log(response.data.comment);
         } catch (e) {
             console.error(e);
         }
@@ -67,7 +68,7 @@ const Comments = ({ postId, writer_id }) => {
 
     const deleteComment = async (comment_id: number) => {
         try {
-            await axios.delete(`http://localhost:3001/comment/${comment_id}`, {
+            await axios.delete(`http://localhost:3001/post_comment/${comment_id}`, {
                 headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` },
             });
             fetchComments();
@@ -84,6 +85,7 @@ const Comments = ({ postId, writer_id }) => {
     };
 
     const replyComment = (comment_id: number) => {
+        console.log(comment_id);
         return (
             <div>
                 <textarea
@@ -91,8 +93,29 @@ const Comments = ({ postId, writer_id }) => {
                     onChange={(e) => setReplyContent(e.target.value)}
                     placeholder="답글을 입력해 주세요."
                 />
+                <button onClick={() => handleCommentSubmit(comment_id)}>답글</button>
             </div>
         );
+    };
+
+    const handleReplyComment = (comment_id: number) => {
+        if (!user && !users) {
+            alert('로그인 후 이용해 주세요.');
+            navigate('/login');
+            return;
+        }
+
+        if (parentId === comment_id) {
+            setParentId(null);
+        } else {
+            setParentId(comment_id);
+        }
+    };
+
+    const FormatTime = (time: string) => {
+        const formatDate = time.replace('T', ' ').slice(0, 19);
+
+        return formatDate;
     };
 
     return (
@@ -110,17 +133,13 @@ const Comments = ({ postId, writer_id }) => {
                     {comments.map((comment: any) => (
                         <div key={comment.comment_id}>
                             <ul>
-                                <span className="comment-writer">{comment.user_id.name}</span>
+                                <span className="comment-writer">
+                                    {comment.user_id.name} {comment.user_id.user_id === writer_id ? '(작성자)' : null}
+                                </span>
                                 <span className="comment-content">{comment.comment}</span>
-                                <span className="comment-date">{comment.date}</span>
-                                <button
-                                    onClick={() =>
-                                        setParentId(parentId === comment.comment_id ? null : comment.comment_id)
-                                    }
-                                >
-                                    답글
-                                </button>
-                                {comment.user_id.user_id === writer_id ? (
+                                <span className="comment-date">{FormatTime(comment.created_at)}</span>
+                                <button onClick={() => handleReplyComment(comment.comment_id)}>답글</button>
+                                {comment.user_id.user_id === user?.user_id ? (
                                     <>
                                         <button onClick={() => deleteAlert(comment.comment_id)}>삭제</button>
                                     </>
@@ -129,9 +148,19 @@ const Comments = ({ postId, writer_id }) => {
                                     <div>
                                         {comment.children.map((child: any) => (
                                             <ul key={child.comment_id}>
-                                                <span className="comment-writer">{child.user_id.name}</span>
+                                                <span className="comment-writer">
+                                                    {child.user_id.name}{' '}
+                                                    {child.user_id.user_id === writer_id ? '(작성자)' : null}
+                                                </span>
                                                 <span className="comment-content">{child.comment}</span>
-                                                <span className="comment-date">{child.date}</span>
+                                                <span className="comment-date">{FormatTime(child.created_at)}</span>
+                                                {child.user_id.user_id === user?.user_id ? (
+                                                    <>
+                                                        <button onClick={() => deleteAlert(child.comment_id)}>
+                                                            삭제
+                                                        </button>
+                                                    </>
+                                                ) : null}
                                             </ul>
                                         ))}
                                     </div>

@@ -1,6 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreatePostCommentDto } from 'src/dto/post_comment.dto';
+import {
+  CreatePostCommentDto,
+  DeleteCommentDto,
+} from 'src/dto/post_comment.dto';
 import PostEntity from 'src/entities/post.entity';
 import { PostCommentEntity } from 'src/entities/post_comment.entity';
 import UsersEntity from 'src/entities/users.entity';
@@ -21,7 +24,7 @@ export default class PostCommnetService {
 
   async createPostComment(createpostCommentDto: CreatePostCommentDto) {
     try {
-      const { post_id, user_id, comment, comment_id } = createpostCommentDto;
+      const { post_id, user_id, comment, parent_id } = createpostCommentDto;
       const post_comment = new PostCommentEntity();
 
       const post = await this.post.findOneOrFail({
@@ -40,9 +43,9 @@ export default class PostCommnetService {
       post_comment.post_id = post;
       post_comment.comment = comment;
 
-      if (createpostCommentDto.comment_id) {
+      if (parent_id) {
         const parent_comment = await this.postComment.findOneOrFail({
-          where: { comment_id: createpostCommentDto.comment_id },
+          where: { comment_id: parent_id },
           relations: { user_id: true },
         });
 
@@ -98,34 +101,89 @@ export default class PostCommnetService {
         .getMany();
 
       const formatComment = {
-        comment: comment.map(({ comment_id, comment, user_id, children }) => ({
-          comment_id,
-          comment,
-          user_id: user_id
-            ? {
-                user_id: user_id.user_id,
-                name: user_id.name,
-                email: user_id.email,
-              }
-            : null,
-          children:
-            children.map(({ comment_id, comment, user_id }) => ({
-              comment_id,
-              comment,
-              user_id: user_id
-                ? {
-                    user_id: user_id.user_id,
-                    name: user_id.name,
-                    email: user_id.email,
-                  }
-                : null,
-            })) ?? [],
-        })),
+        comment: comment.map(
+          ({
+            comment_id,
+            comment,
+            user_id,
+            children,
+            created_at,
+            updated_at,
+            deleted_at,
+          }) => ({
+            comment_id,
+            comment,
+            user_id: user_id
+              ? {
+                  user_id: user_id.user_id,
+                  name: user_id.name,
+                  email: user_id.email,
+                }
+              : null,
+            children:
+              children.map(
+                ({
+                  comment_id,
+                  comment,
+                  user_id,
+                  created_at,
+                  updated_at,
+                  deleted_at,
+                }) => ({
+                  comment_id,
+                  comment,
+                  user_id: user_id
+                    ? {
+                        user_id: user_id.user_id,
+                        name: user_id.name,
+                        email: user_id.email,
+                      }
+                    : null,
+                  created_at,
+                  updated_at,
+                  deleted_at,
+                }),
+              ) ?? [],
+            created_at: created_at,
+            updated_at: updated_at,
+            deleted_at: deleted_at,
+          }),
+        ),
       };
 
       return formatComment;
     } catch (e) {
       console.error(e);
+      if (e instanceof HttpException) {
+        throw e;
+      }
+    }
+  }
+
+  async DeleteCommentDto(deleteCommentDto: DeleteCommentDto) {
+    try {
+      const { comment_id } = deleteCommentDto;
+      const comment = await this.postComment.findOneOrFail({
+        where: { comment_id: comment_id },
+        relations: { user_id: true },
+      });
+
+      console.log(comment);
+
+      if (!comment) {
+        throw new HttpException(
+          '존재하지 않는 댓글입니다.',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      await this.postComment.delete({
+        comment_id: comment_id,
+        user_id: comment.user_id,
+      });
+
+      return { message: '댓글이 삭제되었습니다.' };
+    } catch (e) {
       if (e instanceof HttpException) {
         throw e;
       }

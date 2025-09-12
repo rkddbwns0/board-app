@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const auth = async () => {
         let token = sessionStorage.getItem('access_token');
-
         if (!token) {
             token = await newAceessToken();
         }
@@ -51,10 +50,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 },
             });
             sessionStorage.setItem('user', JSON.stringify(response.data));
-            console.log(response.data);
+
             setUser(response.data);
         } catch (e) {
             console.log(e);
+            if (!user) {
+                sessionStorage.removeItem('user');
+                sessionStorage.removeItem('access_token');
+            }
             await newAceessToken();
         } finally {
             setLoading(false);

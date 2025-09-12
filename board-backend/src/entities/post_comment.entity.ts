@@ -34,6 +34,12 @@ export class PostCommentEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
+  @Column({ type: 'timestamp' })
+  updated_at: Date;
+
+  @Column({ type: 'timestamp' })
+  deleted_at: Date;
+
   @ManyToOne(() => PostCommentEntity, (post_comment) => post_comment.children, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',

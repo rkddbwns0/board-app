@@ -21,7 +21,7 @@ export class CreatePostCommentDto {
 
   @IsNotEmpty()
   @IsNumber()
-  comment_id?: number;
+  parent_id?: number;
 }
 
 export class GetPostCommentDto {
@@ -61,4 +61,10 @@ export class GetCommentWriterDto {
 
   @IsBoolean()
   is_writer: boolean;
+}
+
+export class DeleteCommentDto {
+  @IsNotEmpty()
+  @IsNumber()
+  comment_id: number;
 }
